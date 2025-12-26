@@ -1,5 +1,6 @@
 from flask import Flask, render_template_string, request
 from processing import analyze
+import os
 
 app = Flask(__name__)
 
@@ -9,7 +10,7 @@ HTML = """
 <head>
     <meta charset="utf-8">
     <title>HSK Analyzer</title>
-</head>
+</head>  
 <body style="font-family:Arial;padding:20px">
     <h2>HSK Text Analyzer</h2>
     <form method="post">
@@ -41,4 +42,5 @@ def index():
     return render_template_string(HTML, result=result, text=text)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
