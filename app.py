@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template_string
+from flask import Flask, render_template_string, request
 from processing import analyze
 
 app = Flask(__name__)
@@ -7,32 +7,38 @@ HTML = """
 <!doctype html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>HSK Analyzer</title>
+    <meta charset="utf-8">
+    <title>HSK Analyzer</title>
 </head>
-<body>
-<h2>HSK Text Analyzer</h2>
+<body style="font-family:Arial;padding:20px">
+    <h2>HSK Text Analyzer</h2>
+    <form method="post">
+        <textarea name="text" rows="6" cols="70">{{ text }}</textarea><br><br>
+        <button type="submit">Phân tích</button>
+    </form>
 
-<form method="post">
-<textarea name="text" rows="10" cols="80">{{ text }}</textarea><br><br>
-<button type="submit">Phân tích</button>
-</form>
-
-{% if result %}
-<pre>{{ result }}</pre>
-{% endif %}
+    {% if result %}
+    <pre>{{ result }}</pre>
+    {% endif %}
 </body>
 </html>
 """
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    text = ""
     result = None
+    text = ""
     if request.method == "POST":
         text = request.form["text"]
-        result = analyze(text)
-    return render_template_string(HTML, text=text, result=result)
+        r = analyze(text)
+        result = (
+            f"Số chữ Hán: {r['characters']}\n"
+            f"Số từ: {r['words']}\n"
+            f"Phân bố level: {r['level_distribution']}\n"
+            f"Ước lượng HSK: {r['estimated_level']}\n"
+            f"Cảnh báo: {r['warning']}"
+        )
+    return render_template_string(HTML, result=result, text=text)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host="0.0.0.0", port=10000)
